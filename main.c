@@ -45,10 +45,8 @@ char file_head[] = {0,0,0,0};
 //msp_id len 0x10
  
 unsigned char ms_id[] = {
-    0x20, 0x4D, 0x53, 0x50, 
-	0x53, 0x4E, 0x59, 0x30, 
-	0x00, 0x79, 0x20, 0x01, 
-	0x1A, 0xD5, 0x00, 0x00
+    0x20, 0x4D, 0x53, 0x50, 0x53, 0x4E, 0x59, 0x30, 
+	0x00, 0x78, 0x54, 0x80, 0x5A, 0xB2, 0x00, 0x00
 };
  
 unsigned char key0[112] = 
@@ -213,7 +211,7 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, int* unk2, int*
 	//hexDump(buf,0x300);
 	unsigned char * size_buf = buf+0xb0;
 	unsigned int size_ = size_buf[0] | (size_buf[1] << 8) | (size_buf[2] << 16) | (size_buf[3] << 24);
-	ret = kirk_CMD1(buf+0x40, buf+0x40, size_); // ??? should not be r16?
+	ret = kirk_CMD1(buf, buf+0x40, size_); // ??? should not be r16?
 	if (ret != 0) return ret;
  
 	return 0;
@@ -241,7 +239,7 @@ int DecryptFile(char *input, char *output)
 		return -1;
 	}
 
-	if (WriteFile(output, buffer+0x40, outsize-0x40) != outsize-0x40)
+	if (WriteFile(output, buffer, outsize) != outsize)
 	{
 		printf("Error writing/creating %s.\n", output);
 		return -1;
