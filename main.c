@@ -85,10 +85,9 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	int enc_size, ret, i, delta;
 	unsigned char *start_ptr;
 	unsigned int *buf32 = (unsigned int *)buf;
-	
+
 	enc_size = buf[0xb3]<<24 | buf[0xb2]<<16 | buf[0xb1]<<8 | buf[0xb0];
-	
-	//printf("out_size = %llX\n", enc_size );
+
 	*out_size = enc_size;
  
 	if ((size-0x150) < enc_size) return -0xCD;
@@ -111,13 +110,11 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	buf32[3] = 1; // C keyseed
 	buf32[4] = 0x80; // 0x10 size
 	start_ptr = buf;
-	
+
 	memcpy(buf,buf32,0x14);
 	memcpy(buf+0x14, msp_id, 0x10);
 	memcpy(buf+0x24, key0, 0x70);
-	
-	//hexDump(buf,0x94);
- 
+
 	ret = kirk_CMD4(buf, buf, 0x80);
 	if (ret != 0) return ret;
 
@@ -126,19 +123,13 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	//===================================================================================
  
 	memcpy(header_p2, buf+0x14, 0x80);
-	
-	//hexDump(header_p2,0x80);
- 
+
 	unsigned int *addr = (unsigned int *)start_ptr;
 	*(addr) = 0xAC;
  
 	memcpy(buf+0x4, header_p2+0x6c, 0x14);
 	memcpy(buf+0x18, header_p1+0x18, 0x80);
-	
-	
-	//printf("stage 3 sha1.\n");
-	//hexDump(buf,0xB0);
-	
+
 	ret = kirk_CMD11(buf, buf, 0xAC);
 	if (ret != 0) return ret;
  
@@ -148,7 +139,7 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	unsigned char *hdr_p1_offset = header_p1+0x4;
 	//WriteFile("hdr_p1_offset.bin", hdr_p1_offset, 0x14);
 	//WriteFile("buf.bin", buf, 0x40);
-	
+
 	//hexDump(hdr_p1_offset,0x40);
 	for(i = 0; i < 0x14; i++)
 	{
@@ -170,14 +161,10 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	memcpy(buf+0x2c, header_p1+0x30, 0x80);
  
 	//hexDump(buf,0x98);
-	//printf("stage 4 kirk7 header.\n");
-	//hexDump(buf,0x200);
-	
+
 	ret = kirk_CMD7(buf+0x18, buf+0x18, 0x80);
 	if (ret != 0) return ret;
- 
-	//hexDump(buf,0x200);
- 
+
 	//===================================================================================
 	//stage 5
 	//===================================================================================
@@ -186,7 +173,6 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	{
 		tmp_ptr[i] = tmp_ptr[i] ^ header_p2[i];
 	}
-	//hexDump(buf,0x200);
  
 	buf32[1] = 5; // 4
 	buf32[2] = 0; // 8
@@ -194,17 +180,14 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	buf32[4] = 0x41; // 0x10
 	buf32[5] = 0x80; // 0x14
 	start_ptr = buf+0x4;
- 
-	//printf("stage 5 kirk7 header.\n");
-	//hexDump(buf,0x200);
+
 	ret = kirk_CMD7(buf+0x4, buf+0x4, 0x80);
 	if (ret != 0) return ret;
  
 	//===================================================================================
 	//stage 6
 	//===================================================================================
-	
-	//hexDump(buf,0x200);
+
 	tmp_ptr = buf+0x14;
 //	WriteFile("tmp_ptr.bin", tmp_ptr, 0x40);
 //	WriteFile("msp_id.bin", msp_id, 0x10);
@@ -217,25 +200,20 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 			return -0x12f;
 		}
 	} 
-	
+
 //	WriteFile("buf_pre_memcpy.bin", buf, 0x300);
-	//hexDump(buf,0x300);
 	//memcpy(buf+0x30, buf+0x4, 0x80);
 	for (i = 0x7F; i >= 0; i--)
 	{
 		buf[0x30+i] = buf[0x4+i];
 	}
-	
-	//printf("\n");
-	//hexDump(buf,0x300);
-	
+
 	memcpy(buf+0x40, buf+0x30, 0x10);
 	memcpy(unk2, buf+0xd0, 0x80);
 
 //	WriteFile("buf_pre_kirk.bin", buf, 0x300);
-	//hexDump(buf,0x300);
 	//hexDump(unk2,0x80);
-	
+
 	unsigned int *size_buf = (unsigned int*)(buf+0xb0);
 	unsigned int kirk1_predata_size = size_buf[1];
 	unsigned int kirk1_data_size = size_buf[0];
@@ -245,7 +223,6 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	unsigned int enc_data_offset = kirk1_blob_offset + kirk1_header_size + kirk1_predata_size;
 	
 	ret = kirk_CMD1(buf + enc_data_offset, buf + kirk1_blob_offset, kirk1_blob_size); // ??? should not be r16?
-	
 	if (ret != 0) return ret;
  
 	return 0;
@@ -260,47 +237,39 @@ int Encrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	//stage 1 kirk1 header
 	//===================================================================================
 
-	//hexDump(buf,0x300);
 	unsigned int kirk1_blob_offset = 0x40;
 	unsigned int kirk1_header_size = 0x90;
 	unsigned int kirk1_predata_size = 0x80;
 	unsigned int kirk1_data_size = size;
 	unsigned int kirk1_blob_size = kirk1_header_size + kirk1_data_size + kirk1_predata_size;
-	
+
 	ret = kirk_init();
 	if (ret != 0) return ret;
 
-	kirk_CMD14(buf + kirk1_blob_offset, 0x20); //keys
-	//ReadFile("keys.bin", buf + kirk1_blob_offset, 0x20);
-	
+	ret = kirk_CMD14(buf + kirk1_blob_offset, 0x20); //keys
+	if (ret != 0) return ret;
+
 	*(unsigned int *)(buf + kirk1_blob_offset + 0x60) = 1; //cmd
 	*(unsigned int *)(buf + kirk1_blob_offset + 0x70) = size; //data size
 	*(unsigned int *)(buf + kirk1_blob_offset + 0x74) = 0x80; //predata size
-	
+
 	memcpy(buf + kirk1_blob_offset + kirk1_header_size, unk2, 0x80);
-	
-	//hexDump(buf,0x300);
+
 	ret =  kirk_CMD0(buf + kirk1_blob_offset, buf + kirk1_blob_offset, kirk1_blob_size, 0);
 	if (ret != 0) return ret;
-	//hexDump(buf,0x300);
-	
+
 	//===================================================================================
 	//stage 2 kirk7 header
 	//===================================================================================
-	
+
 	memcpy(buf+0x30, buf+0x40, 0x10);
 	memcpy(buf+0x40, msp_id, 0x10);
-	
-	//hexDump(buf,0x300);
-	//for (i = 0x7F; i >= 0; i--)
+
 	for (i = 0; i <= 0x7F; i++)
 	{
-		//buf[0x30+i] = buf[0x4+i];
 		buf[0x4+i] = buf[0x30+i];
 	}
-	//printf("stage 2 prekirk7 header.\n");
-	//hexDump(buf,0x120);
-	
+
 	unsigned char* kirk7_buf = (unsigned char*)malloc(0x80+0x14);
 	memset(kirk7_buf, 0, 0x80+0x14);
 	memcpy(kirk7_buf+0x14, buf+0x4, 0x80);
@@ -309,22 +278,16 @@ int Encrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	*(unsigned int *)(kirk7_buf + 8) = 0;
 	*(unsigned int *)(kirk7_buf + 0xC) = 0x41; //key slot
 	*(unsigned int *)(kirk7_buf + 0x10) = 0x80; //data size
-	
-	//hexDump(kirk7_buf,0x80+0x14);
+
 	ret = kirk_CMD4(kirk7_buf, kirk7_buf, 0x80);
 	if (ret != 0) return ret;
-	
-	//hexDump(kirk7_buf,0x80+0x14);
-	
+
 	memcpy(buf+0x4, kirk7_buf, 0x94);
-	
-	//printf("stage 2 afterkirk7 header.\n");
-	//hexDump(buf,0x200);
-	
+
 	//===================================================================================
 	//stage 3 header_p2, xor
 	//===================================================================================
-	
+
 	memset(kirk7_buf, 0, 0x80+0x14);
 	memcpy(kirk7_buf+0x14, msp_id, 0x10);
 	memcpy(kirk7_buf+0x24, key0, 0x70);
@@ -333,84 +296,64 @@ int Encrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	*(unsigned int *)(kirk7_buf + 8) = 0;
 	*(unsigned int *)(kirk7_buf + 0xC) = 1; //key slot
 	*(unsigned int *)(kirk7_buf + 0x10) = 0x80; //data size
-	
-	//hexDump(kirk7_buf,0x80+0x14);
+
 	ret = kirk_CMD4(kirk7_buf, kirk7_buf, 0x80);
 	if (ret != 0) return ret;
-	
-	//hexDump(kirk7_buf,0x80+0x14);
+
 	memcpy(header_p2, kirk7_buf+0x14, 0x80);
-	
+
 	unsigned char *tmp_ptr = buf+0x18;
 	for(i = 0; i < 0x80; i++)
 	{
 		tmp_ptr[i] = tmp_ptr[i] ^ header_p2[i];
 	}
-	
+
 	//===================================================================================
 	//stage 4 kirk7 header again
 	//===================================================================================
-	
+
 	memset(kirk7_buf, 0, 0x80+0x14);
-	
-	//printf("stage 4 kirk7 header again pre.\n");
-	//hexDump(buf,0x200);
 	memcpy(kirk7_buf+0x14, buf+0x18, 0x80);
 	*(unsigned int *)(kirk7_buf) = 4; //mode encrypt
 	*(unsigned int *)(kirk7_buf + 4) = 0;
 	*(unsigned int *)(kirk7_buf + 8) = 0;
 	*(unsigned int *)(kirk7_buf + 0xC) = 0x41; //key slot
 	*(unsigned int *)(kirk7_buf + 0x10) = 0x80; //data size
-	
+
 	ret = kirk_CMD4(kirk7_buf, kirk7_buf, 0x80);
 	if (ret != 0) return ret;
-	
+
 	memcpy(buf+0x18, kirk7_buf+0x14, 0x80);
-	
-	//printf("stage 4 kirk7 header again post.\n");
-	//hexDump(buf,0x200);
-	
 	memcpy(header_p1+0x30, buf+0x18, 0x80);
-	kirk_CMD14(header_p1 + 0x18, 0x18); //random ?
-	
-	//hexDump(header_p2,0x80);
-	//hexDump(header_p1,0xb0);
-	
-	
+
+	ret = kirk_CMD14(header_p1 + 0x18, 0x18); //random pad
+	if (ret != 0) return ret;
+
 	//===================================================================================
 	//stage 5 sha1 header
 	//===================================================================================
-	
+
 	unsigned char* kirk11_buf = (unsigned char*)malloc(0xAC+4);
 	memset(kirk11_buf, 0, 0xAC+4);
 	memcpy(kirk11_buf + 0x18, header_p1+0x18, 0x98);
 	memcpy(kirk11_buf + 4, header_p2 + 0x6C, 0x14);
 	*(unsigned int *)(kirk11_buf) = 0xAC; //size
-	
-	//hexDump(kirk11_buf,0xB0);
-	
+
 	ret = kirk_CMD11(kirk11_buf, kirk11_buf, 0xAC);
 	if (ret != 0) return ret;
-	
-	//hexDump(kirk11_buf,0xB0);
-	
-	memcpy(header_p1 + 4, kirk11_buf, 0x14);
-	//memcpy(buf + 0xAC, kirk11_buf + 0xAC, 4);
-	
+
+	memcpy(header_p1 + 4, kirk11_buf, 0x14);	
 	memcpy(buf, header_p1, 0xB0);
-	//hexDump(buf,0x300);
-	
-	
-	
+
 	return 0;
 }
 
 int DecryptFile(char *input, char *output)
 {
 	printf("Decrypting %s to %s.\n", input, output);
-	
+
 	int outsize;
-	
+
 	memset (buffer,0, sizeof(buffer));
 	int size = ReadFile(input, buffer, sizeof(buffer));
 
@@ -429,8 +372,6 @@ int DecryptFile(char *input, char *output)
 		return -1;
 	}
 
-//	hexDump(buffer,0x200);
-
 	if (WriteFile(output, buffer+0x150, outsize) != outsize)
 	{
 		printf("Error writing/creating %s.\n", output);
@@ -445,7 +386,7 @@ int EncryptFile(char *input, char *output)
 	printf("Encrypting %s to %s.\n", input, output);
 
 	int outsize;
-	
+
 	memset (buffer,0, sizeof(buffer));
 	int size = ReadFile(input, buffer+0x150, sizeof(buffer)-0x150);
 
@@ -592,10 +533,11 @@ int main(int argc, char **argv)
 	int outsize;
 	int res;
 
-	if(argc!=2){
-		printf("Usage: %s -d or %s -e\n",argv[0],argv[0]);
-		return -1;
-	}
+	if(argc!=2)
+	{
+        printf("Usage: %s -d or %s -e\n",argv[0],argv[0]);
+        return -1;
+    }
 
 	if (!strcmp(argv[1], "-d"))
 	{
