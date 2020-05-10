@@ -45,11 +45,8 @@ char file_head[] = {0,0,0,0};
  
 //msp_id len 0x10
  
-unsigned char ms_id[] = {
-    0x20, 0x4D, 0x53, 0x50, 
-	0x53, 0x4E, 0x59, 0x30, 
-	0x00, 0x79, 0x20, 0x01, 
-	0x1A, 0xD5, 0x00, 0x00
+unsigned char ms_id[0x10] = {
+    0
 };
  
 unsigned char key0[0x70] = 
@@ -231,7 +228,8 @@ int Decrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 int Encrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* unk2, int* out_size)
 {
 	int ret, i;
-	*out_size = size + 0x150;
+	unsigned int kirk1_data_size = 0x10 - (size % 0x10) + size;
+	*out_size = kirk1_data_size + 0x150;
 
 	//===================================================================================
 	//stage 1 kirk1 header
@@ -240,7 +238,7 @@ int Encrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	unsigned int kirk1_blob_offset = 0x40;
 	unsigned int kirk1_header_size = 0x90;
 	unsigned int kirk1_predata_size = 0x80;
-	unsigned int kirk1_data_size = size;
+	//printf("data size is %08X\n", kirk1_data_size);
 	unsigned int kirk1_blob_size = kirk1_header_size + kirk1_data_size + kirk1_predata_size;
 
 	ret = kirk_init();
@@ -250,7 +248,7 @@ int Encrypt(unsigned char* buf, int size, unsigned char* msp_id, unsigned char* 
 	if (ret != 0) return ret;
 
 	*(unsigned int *)(buf + kirk1_blob_offset + 0x60) = 1; //cmd
-	*(unsigned int *)(buf + kirk1_blob_offset + 0x70) = size; //data size
+	*(unsigned int *)(buf + kirk1_blob_offset + 0x70) = kirk1_data_size; //data size
 	*(unsigned int *)(buf + kirk1_blob_offset + 0x74) = 0x80; //predata size
 
 	memcpy(buf + kirk1_blob_offset + kirk1_header_size, unk2, 0x80);
