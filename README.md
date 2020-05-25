@@ -10,7 +10,7 @@ mathieulh for original psp code
 
 ## usage
 
-grab msid.bin using [MSID-Dumper-3.XX-MOD](https://github.com/ErikPshat/MSID-Dumper-3.XX-MOD)
+grab msid.bin using [**MSID-Dumper-3.XX-MOD**](https://github.com/ErikPshat/MSID-Dumper-3.XX-MOD) by ![репозиторий ErikPshat](https://avatars1.githubusercontent.com/u/1283017?s=30&v=4)
 
 place msid.bin from jigkick files and prx folder with prx.enc
 
