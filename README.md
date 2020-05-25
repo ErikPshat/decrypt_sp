@@ -14,17 +14,17 @@ grab `msid.bin` using [**MSID-Dumper-3.XX-MOD**](https://github.com/ErikPshat/MS
 
 place `msid.bin` to jigkick and 'prx' folder with prx.enc files and run command:
 
-...
+```
 ***./decrypt_sp -d***
-...
+```
 
 will generate 'dec' folder with decrypted files
 
 place `msid.bin` from your own memstick and run command:
 
-...
+```
 ***./decrypt_sp -e***
-...
+```
 
 will generate 'enc' folder with encrypted files for your memstick
 
