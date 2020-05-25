@@ -10,18 +10,18 @@ mathieulh for original psp code
 
 ## usage
 
-grab msid.bin using [**MSID-Dumper-3.XX-MOD**](https://github.com/ErikPshat/MSID-Dumper-3.XX-MOD) by ![репозиторий ErikPshat](https://avatars1.githubusercontent.com/u/1283017?s=30&v=4)
+grab msid.bin using [**MSID-Dumper-3.XX-MOD**](https://github.com/ErikPshat/MSID-Dumper-3.XX-MOD) by ![репозиторий ErikPshat](https://avatars1.githubusercontent.com/u/1283017?s=35&v=4)
 
-place msid.bin from jigkick files and prx folder with prx.enc
+place msid.bin to jigkick and 'prx' folder with prx.enc files
 
-run decrypt_sp -d 
+run ./decrypt_sp -d 
 
-will generate dec folder with files
+will generate 'dec' folder with decrypted files
 
 place msid.bin from your own memstick
 
-run decrypt_sp -e
+run ./decrypt_sp -e
 
-will generate enc folder with files for your stick
+will generate 'enc' folder with encrypted files for your memstick
 
-rename to prx enc folder done
+rename 'enc' folder to 'prx' - done
