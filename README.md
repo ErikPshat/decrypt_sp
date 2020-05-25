@@ -6,7 +6,9 @@ tool for decrypting and encrypting prx.enc
 
 SSL for encript code
 
-mathieulh for original psp code
+[mathieulh](https://github.com/mathieulh/PRX.ENC-Tool) for original PSP code
+
+[zecoxao](https://github.com/zecoxao/decrypt_sp) for PC port
 
 ## usage
 
